@@ -1,0 +1,33 @@
+LMS Auth Fix Summary
+
+1. Login/Register flow fixed and moved to web routes:
+   - POST /auth/login
+   - POST /auth/register
+   - POST /auth/logout
+
+2. users.role is now treated as the source role field and linked to roles.role_name.
+
+3. Student login flow:
+   - validates user from users table
+   - verifies student approval from tbl_register
+   - preserves session-based student dashboard flow
+
+4. Admin/Employee login flow:
+   - authenticates via Laravel Auth
+   - returns JSON redirect correctly
+
+5. Cleaned issues:
+   - admin login undefined response
+   - student CSRF mismatch on auth endpoints
+   - broken role relation using role_id
+   - broken logout endpoints
+   - broken QrAttendanceController namespace / route resolution
+   - stale route cache removed
+
+Recommended after setup:
+   php artisan route:clear
+   php artisan config:clear
+   php artisan view:clear
+
+Database:
+   - Use included lms.sql if needed.
