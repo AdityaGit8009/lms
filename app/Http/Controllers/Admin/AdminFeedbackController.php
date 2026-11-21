@@ -15,7 +15,7 @@ class AdminFeedbackController extends Controller
 {
   public function create()
   {
-    return view('Admin.feedback.builder', [
+    return view('Admin.Feedback.builder', [
       'form' => null,
       'sessions' => Session::orderByDesc('session_id')->get(),
     ]);
@@ -25,7 +25,7 @@ class AdminFeedbackController extends Controller
   {
     $form = FeedbackForm::findOrFail($id);
 
-    return view('Admin.feedback.builder', [
+    return view('Admin.Feedback.builder', [
       'form' => $form,
       'sessions' => Session::orderByDesc('session_id')->get(),
     ]);
@@ -88,7 +88,7 @@ class AdminFeedbackController extends Controller
       return $form;
     });
 
-    return view('Admin.feedback.manage', compact('forms'));
+    return view('Admin.Feedback.manage', compact('forms'));
   }
 
   public function responsePage($id)
@@ -196,7 +196,7 @@ class AdminFeedbackController extends Controller
     $technologyChart = $this->groupCountsWithNames($responses, 'technology_id', 'tbl_technology', 'technology_id', 'technology_name');
     $batchChart = $this->groupCountsWithNames($responses, 'batch_id', 'tbl_batch', 'batch_id', 'batch_name');
 
-    return view('Admin.feedback.overall_analytics', compact(
+    return view('Admin.Feedback.overall_analytics', compact(
       'responses',
       'sessionChart',
       'centerChart',
