@@ -21,17 +21,16 @@ return new class extends Migration
         });
 
         DB::statement("
-        UPDATE tbl_attendance a
-        JOIN tbl_batch b ON b.batch_id = a.attend_batch
-        JOIN tbl_student s ON s.stu_id = a.attend_student
-        SET
-        a.attend_session = b.session_id,
-        a.attend_center = s.center_id,
-        a.attend_programme = b.programme_id
-        WHERE
-        a.attend_session = ''
-        OR a.attend_center = ''
-        OR a.attend_programme = ''
+            UPDATE tbl_attendance
+            SET attend_session = (SELECT session_id FROM tbl_batch WHERE batch_id = tbl_attendance.attend_batch),
+                attend_programme = (SELECT programme_id FROM tbl_batch WHERE batch_id = tbl_attendance.attend_batch),
+                attend_center = COALESCE(
+                    (SELECT center_id FROM tbl_student WHERE stu_id = tbl_attendance.attend_student),
+                    attend_center
+                )
+            WHERE (attend_session = '' OR attend_center = '' OR attend_programme = '')
+              AND EXISTS (SELECT 1 FROM tbl_batch WHERE batch_id = tbl_attendance.attend_batch)
+              AND EXISTS (SELECT 1 FROM tbl_student WHERE stu_id = tbl_attendance.attend_student)
         ");
     }
 
