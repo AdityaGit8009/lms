@@ -33,9 +33,11 @@ class AdminFeedbackController extends Controller
   }
   public function delete($id)
   {
-    $form = FeedbackForm::findOrFail($id);
-
-    $form->delete();
+    DB::transaction(function () use ($id) {
+      $form = FeedbackForm::lockForUpdate()->findOrFail($id);
+      $form->responses()->delete();
+      $form->delete();
+    });
 
     return redirect()
       ->route('admin.feedback.manage')

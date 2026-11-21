@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\FeedbackForm;
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class StudentFeedbackController extends Controller
 {
@@ -55,22 +56,24 @@ class StudentFeedbackController extends Controller
   {
     $student = $request->attributes->get('studentRegistration');
     $roster = $this->roster($request);
-    $form = FeedbackForm::where('form_status', 'open')->findOrFail($formId);
-    $dimensions = $form->responseDimensions($this->assignments($roster));
-    abort_if($dimensions === null, 404);
+    DB::transaction(function () use ($request, $formId, $student, $roster) {
+      $form = FeedbackForm::where('form_status', 'open')->sharedLock()->findOrFail($formId);
+      $dimensions = $form->responseDimensions($this->assignments($roster));
+      abort_if($dimensions === null, 404);
 
-    $input = $request->validate(['answers' => 'nullable|array']);
-    $answers = $form->validatedAnswers($input['answers'] ?? []);
+      $input = $request->validate(['answers' => 'nullable|array']);
+      $answers = $form->validatedAnswers($input['answers'] ?? []);
 
-    $form->responses()->create([
-      ...$dimensions,
-      'student_id' => $roster?->stu_id,
-      'user_id' => $request->user()->id,
-      'student_name' => $student->name,
-      'email' => $student->email,
-      'mobile' => $student->mobile,
-      'answers_json' => $answers,
-    ]);
+      $form->responses()->create([
+        ...$dimensions,
+        'student_id' => $roster?->stu_id,
+        'user_id' => $request->user()->id,
+        'student_name' => $student->name,
+        'email' => $student->email,
+        'mobile' => $student->mobile,
+        'answers_json' => $answers,
+      ]);
+    });
 
     return redirect()->route('student.feedback.index')->with('success', 'Feedback submitted successfully.');
   }
