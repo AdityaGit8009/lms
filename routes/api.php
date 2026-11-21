@@ -1,4 +1,3 @@
-
 <?php
 
 use App\Http\Controllers\Admin\AdminDashboardController;
@@ -26,8 +25,6 @@ use App\Http\Controllers\Admin\SubjectMockTestController;
 use App\Http\Controllers\Admin\TechnologyController;
 use App\Http\Controllers\Admin\UploadContentController;
 use App\Http\Controllers\Admin\ViewStudentController;
-use App\Http\Controllers\Admin\FeedbackController;
-use App\Http\Controllers\Admin\FeedbackFormController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->middleware('web')->group(function () {
@@ -182,13 +179,6 @@ Route::prefix('admin')->group(function () {
 
   Route::delete('/popup-notifications/{popupNotification}', [PopupNotificationController::class, 'destroy'])
     ->name('admin.popup-notifications.destroy');
-});
-
-Route::prefix('feedback')->group(function () {
-  Route::get('/form-data', [FeedbackFormController::class, 'formData']);
-  Route::post('/submit', [FeedbackFormController::class, 'submit']);
-  Route::get('/public/{publicKey}', [FeedbackFormController::class, 'getPublicForm']);
-  Route::post('/public/{publicKey}/submit', [FeedbackFormController::class, 'submitPublicApi']);
 });
 
 Route::prefix('attendance')->name('attendance.')->group(function () {
