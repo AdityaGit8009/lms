@@ -4,58 +4,69 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\FeedbackForm;
-use App\Models\FeedbackResponse;
 use App\Models\Student;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class StudentFeedbackController extends Controller
 {
-  public function index()
+  private function roster(Request $request): ?Student
   {
-    $user = Auth::user();
+    $roster = Student::with([
+      'assignedSessions', 'assignedProgrammes', 'assignedTechnologies',
+      'assignedBatches' => fn ($query) => $query->where('is_active', 'Y'),
+    ])->where('stu_email', $request->user()->email)->first();
 
-    $student = Student::where('stu_email', $user->email)->first();
+    abort_if($roster && ($roster->is_block === 'Y' || $roster->del_status === 'Y'), 403);
 
-    if (!$student) {
-      return redirect()->back()->with('error', 'Student profile not found.');
-    }
+    return $roster;
+  }
 
-    $forms = FeedbackForm::where('form_status', 'open')->latest('form_id')->get();
+  private function assignments(?Student $roster): array
+  {
+    return [
+      'session' => [$roster?->stu_session, ...($roster?->assignedSessions->pluck('session_id')->all() ?? [])],
+      'center' => [$roster?->center_id],
+      'programme' => [$roster?->stu_pro, ...($roster?->assignedProgrammes->pluck('programme_id')->all() ?? [])],
+      'technology' => $roster?->assignedTechnologies->pluck('technology_id')->all() ?? [],
+      'batch' => $roster?->assignedBatches->pluck('batch_id')->all() ?? [],
+    ];
+  }
+
+  public function index(Request $request)
+  {
+    $student = $request->attributes->get('studentRegistration');
+    $assignments = $this->assignments($this->roster($request));
+    $forms = FeedbackForm::where('form_status', 'open')->latest('form_id')->get()
+      ->filter(fn ($form) => $form->responseDimensions($assignments) !== null);
 
     return view('Student.feedback.index', compact('forms', 'student'));
   }
 
-  public function show($formId)
+  public function show(Request $request, $formId)
   {
-    $user = Auth::user();
-    $student = Student::where('stu_email', $user->email)->firstOrFail();
-    $form = FeedbackForm::findOrFail($formId);
+    $student = $request->attributes->get('studentRegistration');
+    $form = FeedbackForm::where('form_status', 'open')->findOrFail($formId);
+    abort_if($form->responseDimensions($this->assignments($this->roster($request))) === null, 404);
 
     return view('Student.feedback.show', compact('form', 'student'));
   }
 
   public function store(Request $request, $formId)
   {
-    $user = Auth::user();
-    $student = Student::where('stu_email', $user->email)->firstOrFail();
-    $form = FeedbackForm::findOrFail($formId);
+    $student = $request->attributes->get('studentRegistration');
+    $roster = $this->roster($request);
+    $form = FeedbackForm::where('form_status', 'open')->findOrFail($formId);
+    $dimensions = $form->responseDimensions($this->assignments($roster));
+    abort_if($dimensions === null, 404);
 
-    $answers = $request->input('answers', []);
-
-    FeedbackResponse::create([
-      'form_id' => $form->form_id,
-      'student_id' => $student->stu_id ?? null,
-      'user_id' => $user->id,
-      'student_name' => $student->stu_name ?? $user->name,
-      'email' => $student->stu_email ?? $user->email,
-      'mobile' => $student->stu_mobile ?? null,
-      'session_id' => $student->session_id ?? null,
-      'center_id' => $student->center_id ?? null,
-      'programme_id' => $student->programme_id ?? null,
-      'technology_id' => $student->technology_id ?? null,
-      'batch_id' => $student->batch_id ?? null,
-      'answers_json' => $answers,
+    $form->responses()->create([
+      ...$dimensions,
+      'student_id' => $roster?->stu_id,
+      'user_id' => $request->user()->id,
+      'student_name' => $student->name,
+      'email' => $student->email,
+      'mobile' => $student->mobile,
+      'answers_json' => $request->input('answers', []),
     ]);
 
     return redirect()->route('student.feedback.index')->with('success', 'Feedback submitted successfully.');
