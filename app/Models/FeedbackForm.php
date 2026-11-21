@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class FeedbackForm extends Model
 {
@@ -51,6 +53,45 @@ class FeedbackForm extends Model
     }
 
     return $dimensions;
+  }
+
+  public function validatedAnswers(array $input): array
+  {
+    $rules = [];
+    $attributes = [];
+    foreach ($this->questions_json as $question) {
+      $key = 'answers.' . $question['uid'] . '.value';
+      $options = $question['options'] ?? [];
+      $rules[$key] = [
+        !empty($question['required']) ? 'required' : 'nullable',
+        ...match ($question['type']) {
+          'checkbox' => ['array', 'list'],
+          'radio', 'dropdown' => ['string', Rule::in($options)],
+          'rating' => ['integer', 'between:1,5'],
+          default => ['string'],
+        },
+      ];
+      $attributes[$key] = $question['text'];
+
+      if ($question['type'] === 'checkbox') {
+        $rules[$key . '.*'] = ['string', 'distinct', Rule::in($options)];
+        $attributes[$key . '.*'] = $question['text'];
+      }
+    }
+
+    Validator::make(['answers' => $input], $rules, [], $attributes)->validate();
+
+    $answers = [];
+    foreach ($this->questions_json as $question) {
+      $id = $question['uid'];
+      $answers[$id] = [
+        'question' => $question['text'],
+        'type' => $question['type'],
+        'value' => $input[$id]['value'] ?? null,
+      ];
+    }
+
+    return $answers;
   }
 
   public function responses()

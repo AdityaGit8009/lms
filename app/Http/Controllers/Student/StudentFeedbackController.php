@@ -59,6 +59,9 @@ class StudentFeedbackController extends Controller
     $dimensions = $form->responseDimensions($this->assignments($roster));
     abort_if($dimensions === null, 404);
 
+    $input = $request->validate(['answers' => 'nullable|array']);
+    $answers = $form->validatedAnswers($input['answers'] ?? []);
+
     $form->responses()->create([
       ...$dimensions,
       'student_id' => $roster?->stu_id,
@@ -66,7 +69,7 @@ class StudentFeedbackController extends Controller
       'student_name' => $student->name,
       'email' => $student->email,
       'mobile' => $student->mobile,
-      'answers_json' => $request->input('answers', []),
+      'answers_json' => $answers,
     ]);
 
     return redirect()->route('student.feedback.index')->with('success', 'Feedback submitted successfully.');
