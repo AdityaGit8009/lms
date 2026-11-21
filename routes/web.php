@@ -99,7 +99,6 @@ Route::middleware('auth')->group(function () {
 
   Route::get('/add-attandence', [AttendanceController::class, 'index'])->name('admin.addattandence');
   Route::get('/view-attandence', [AttendanceController::class, 'viewAttendance'])->name('admin.viewattandence');
-  Route::get('/view-attandence/data', [AttendanceController::class, 'viewAttendanceData'])->name('admin.viewattandence.data');
   Route::get('/attendance/bulk-template', [AttendanceController::class, 'downloadBulkTemplate'])->name('attendance.bulk.template');
   Route::get('/qr-attendance', [QrAttendanceController::class, 'showForm'])->name('qr.attendance.form');
 

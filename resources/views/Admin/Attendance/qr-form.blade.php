@@ -58,7 +58,7 @@
         </div>
         @endif
 
-        <form method="POST" action="{{ route('qr.attendance.submit') }}">
+        <form method="POST" action="{{ route('attendance.qr.attendance.submit') }}">
           @csrf
 
           <div class="mb-3">
