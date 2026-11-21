@@ -1,134 +1,69 @@
-<div align="center">
+# Learning Management System
 
-# 🎓 Learning Management System (LMS)
+This Laravel 12 application runs an education centre's administrator and student portals. Administrators maintain the course catalogue and rosters, record attendance, publish learning materials, and review feedback. Students self-register and sign in after an administrator approves their registration.
 
-### A foundation for a modern, organized digital learning platform
+## What you can do
 
-[![Project Status](https://img.shields.io/badge/Status-Repository%20Setup-blue?style=for-the-badge)](https://github.com/AdityaGit8009/lms)
-[![GitHub Repo](https://img.shields.io/badge/GitHub-AdityaGit8009%2Flms-181717?style=for-the-badge&logo=github)](https://github.com/AdityaGit8009/lms)
-[![Contributions Welcome](https://img.shields.io/badge/Contributions-Welcome-brightgreen?style=for-the-badge)](https://github.com/AdityaGit8009/lms/issues)
-
-**[Repository](https://github.com/AdityaGit8009/lms)** · **[Report an Issue](https://github.com/AdityaGit8009/lms/issues)** · **[Developer](https://github.com/AdityaGit8009)**
-
-</div>
-
----
-
-## 📖 Overview
-
-**LMS (Learning Management System)** is a project repository intended for building a centralized platform to manage digital learning activities. The goal is to support structured course delivery, user management, and learning progress in a single application.
-
-> **Current repository status:** At the time this README was prepared (10 November 2026), the public GitHub repository contained no source files. The capabilities and architecture below describe a **proposed roadmap**, not verified implemented functionality. Update this document as code is published.
-
-## 🎯 Project Goals
-
-- Organize courses and educational resources in one place.
-- Provide clear experiences for learners, instructors, and administrators.
-- Simplify enrollment, assignments, and evaluation workflows.
-- Offer visibility into learning progress and course completion.
-- Build a maintainable, secure foundation that can expand over time.
-
-## ✨ Planned Features
-
-| Module | Proposed Capabilities | Status |
-| --- | --- | --- |
-| 🔐 Authentication | Registration, login, logout, password recovery | 📌 Planned |
-| 👥 Role Management | Student, instructor, and administrator access | 📌 Planned |
-| 📚 Course Management | Course creation, updates, listing, and organization | 📌 Planned |
-| 🧩 Lessons & Resources | Learning materials, lessons, attachments | 📌 Planned |
-| 📝 Assignments | Publishing, submissions, and grading | 📌 Planned |
-| 📊 Progress Tracking | Course progress and completion insights | 📌 Planned |
-| 📣 Notifications | Deadline and activity notifications | 📌 Planned |
-| 📈 Admin Dashboard | User and course oversight | 📌 Planned |
-
-These are product ideas, **not claims about existing code**.
-
-## 🧭 Proposed User Workflow
-
-```mermaid
-flowchart TD
-    A[Open LMS] --> B{Choose user role}
-    B --> C[Student]
-    B --> D[Instructor]
-    B --> E[Administrator]
-    C --> F[Browse and enroll in courses]
-    F --> G[Learn and submit assignments]
-    D --> H[Create courses and lessons]
-    H --> I[Review submissions]
-    E --> J[Manage users and courses]
-```
-
-## 🛠️ Technology Stack
-
-**To be confirmed when source code is uploaded.** The repository currently does not provide enough information to accurately identify the application framework, database, or deployment stack.
-
-| Layer | Technology |
+| Area | Implemented workflows |
 | --- | --- |
-| Frontend | To be documented |
-| Backend | To be documented |
-| Database | To be documented |
-| Authentication | To be documented |
-| Deployment | To be documented |
+| People and enrolment | Approve registrations, manage student and employee rosters, assign sessions and batches, and import or export CSV templates. |
+| Academic setup | Organise centres, programmes, technologies, batches, courses, branches, subjects, and topics. |
+| Teaching materials | Upload topic content, attach assignments and recordings, and manage mock tests and online test questions. |
+| Attendance | Record attendance manually or by CSV, review daily records, and mark a student present through the QR attendance form. QR marks allow one student and one device IP per day. |
+| Communication | Manage notification headings, targeted announcements, and scheduled popup notices. |
+| Feedback | Build forms with six question types, select an audience, open or close a form, and inspect responses and aggregate results. |
 
-## 🚀 Getting Started
+The student dashboard, courses, assignments, quizzes, results, and certificates include example content. Registration, approval, sign-in, and feedback use the application database. A student's registration and roster entry are separate records. The portal matches their email addresses to apply roster-based feedback assignments.
 
-The project currently has no published application code or verified run instructions. You can clone the repository to begin development:
+## Run locally
 
-```bash
-git clone https://github.com/AdityaGit8009/lms.git
-cd lms
+Use PHP 8.2 or a compatible newer release, Composer 2, and MySQL with the PDO MySQL extension. The test suite also needs PDO SQLite. The Blade screens load the checked-in assets under `public/assets` and several browser libraries from CDNs.
+
+1. Clone the repository and install the versions in `composer.lock`.
+
+   ```sh
+   git clone https://github.com/AdityaGit8009/lms.git
+   cd lms
+   composer install
+   composer check-platform-reqs
+   ```
+
+2. Create a local configuration and generate this installation's application key.
+
+   ```sh
+   php -r "copy('.env.example', '.env');"
+   php artisan key:generate
+   ```
+
+3. Create an empty MySQL database. Set `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD` in `.env` to the values for your local database. The supplied template uses file sessions, a synchronous queue, and local mail logging.
+
+4. Install the schema and role records, link the public storage directory, and create your administrator. The account command prompts for your name, email, and password and requires an unused email address.
+
+   ```sh
+   php artisan migrate --seed
+   php artisan storage:link
+   php artisan lms:create-admin
+   php artisan serve
+   ```
+
+5. Open [the local login page](http://127.0.0.1:8000/login). To try the student workflow, visit `/register` using a different email address, approve the registration in the administrator's **Self Registration** screen, and sign in as that student. Open feedback forms with an unrestricted audience are available immediately. Targeted forms require matching assignments.
+
+## Validation
+
+```sh
+php artisan route:list
+php artisan view:cache
+php artisan test
 ```
 
-> Installation dependencies, environment variables, database setup, migrations, and start commands will be added after the project files are published.
+PHPUnit starts with an in-memory SQLite database. Feature tests exercise administrator setup, student approval and revocation, role checks, QR attendance, and feedback from form authoring through submission and reporting. Running `php artisan view:clear` removes the compiled local views.
 
-## 📁 Project Structure
+## Where to make changes
 
-No application directory structure has been published yet. Add an accurate tree here after the first source-code commit.
+- `routes/web.php` defines browser pages and the student and administrator feedback workflows.
+- `routes/api.php` defines the session-authenticated JSON and form endpoints used by the administrator interface.
+- `app/Http/Controllers`, `app/Models`, and `database/migrations` contain the application logic and database schema.
+- `resources/views/Admin` and `resources/views/Student` contain the Blade screens. Their directory names are case-sensitive on Linux.
+- `tests/Feature` contains the request-level regression suite.
 
-## 🗺️ Development Roadmap
-
-- [ ] Publish initial source code and dependency manifest
-- [ ] Document local development setup
-- [ ] Implement authentication and role authorization
-- [ ] Implement course and lesson management
-- [ ] Add enrollment and assignment workflows
-- [ ] Add tests and validation
-- [ ] Improve dashboards, accessibility, and responsiveness
-- [ ] Document deployment and production configuration
-
-## 🔒 Security Considerations
-
-Before any production deployment:
-
-- Store secrets and credentials in environment variables, not source control.
-- Validate user input and uploaded files.
-- Enforce server-side permissions for each role.
-- Hash passwords using a trusted authentication framework.
-- Configure secure sessions, CSRF protection, and HTTPS.
-- Add tests for authentication and authorization boundaries.
-
-## 🤝 Contributing
-
-Contributions, suggestions, and bug reports are welcome. Please use the [Issues](https://github.com/AdityaGit8009/lms/issues) page to propose changes. When application code is available, fork the repository, create a feature branch, and open a pull request with a clear explanation of your changes.
-
-## 👨‍💻 Developer
-
-**Aditya Pratap Vishwakarma**
-
-- **GitHub:** [@AdityaGit8009](https://github.com/AdityaGit8009)
-- **LinkedIn:** [vish-aditya](https://www.linkedin.com/in/vish-aditya/)
-- **Email:** [adityapratap7391@gmail.com](mailto:adityapratap7391@gmail.com)
-
-## 📄 License
-
-No license is specified yet. Until a license file is added, standard copyright rules apply. If you intend to make the code openly reusable, add a `LICENSE` file and update this section accordingly.
-
----
-
-<div align="center">
-
-**Built with a focus on accessible, organized digital learning.**
-
-⭐ Star the repository to follow its development.
-
-</div>
+Maintained by Aditya Pratap Vishwakarma. [GitHub profile](https://github.com/AdityaGit8009)
