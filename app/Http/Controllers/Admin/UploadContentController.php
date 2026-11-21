@@ -165,7 +165,7 @@ class UploadContentController extends Controller
       DB::commit();
 
       return redirect()
-        ->route('admin.upload-content.index')
+        ->route('upload-content.index')
         ->with('success', 'Content, assignments, recording, mock test and online test saved successfully.');
     } catch (ValidationException $e) {
       DB::rollBack();
