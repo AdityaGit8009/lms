@@ -15,8 +15,6 @@ return new class extends Migration
             $table->string('created_by', 100)->nullable();
             $table->string('updated_by', 100)->nullable();
             $table->timestamps();
-
-            $table->foreign('course_id')->references('course_id')->on('tbl_courses')->onDelete('cascade');
         });
     }
 
