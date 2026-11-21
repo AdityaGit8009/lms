@@ -73,7 +73,7 @@
             <div class="border rounded-4 p-3 h-100">
               <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
                 <div>
-                  <div class="fw-bold">{{ $response->name ?: ($response->username ?: 'Student') }}</div>
+                  <div class="fw-bold">{{ $response->student_name ?: ($response->name ?: ($response->username ?: 'Student')) }}</div>
                   <div class="text-muted small">
                     {{ $response->email ?: '-' }}
                     @if(!empty($response->mobile)) | {{ $response->mobile }} @endif

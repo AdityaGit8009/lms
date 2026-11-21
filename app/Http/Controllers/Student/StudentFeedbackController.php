@@ -47,7 +47,7 @@ class StudentFeedbackController extends Controller
       'form_id' => $form->form_id,
       'student_id' => $student->stu_id ?? null,
       'user_id' => $user->id,
-      'name' => $student->stu_name ?? $user->name,
+      'student_name' => $student->stu_name ?? $user->name,
       'email' => $student->stu_email ?? $user->email,
       'mobile' => $student->stu_mobile ?? null,
       'session_id' => $student->session_id ?? null,
@@ -58,6 +58,6 @@ class StudentFeedbackController extends Controller
       'answers_json' => $answers,
     ]);
 
-    return redirect()->route('Student.feedback.index')->with('success', 'Feedback submitted successfully.');
+    return redirect()->route('student.feedback.index')->with('success', 'Feedback submitted successfully.');
   }
 }

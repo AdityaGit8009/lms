@@ -12,6 +12,7 @@ class FeedbackResponse extends Model
     protected $fillable = [
         'form_id',
         'student_id',
+        'student_name',
         'user_id',
         'username',
         'name',
