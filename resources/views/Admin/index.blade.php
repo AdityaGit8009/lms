@@ -11,8 +11,7 @@ $adminName = $adminName ?? (auth()->user()->name ?? 'Admin');
 
 $today = now()->toDateString();
 $currentMonthStart = now()->startOfMonth()->toDateString();
-$lastMonthStart = now()->copy()->subMonth()->startOfMonth()->toDateString();
-$lastMonthEnd = now()->copy()->subMonth()->endOfMonth()->toDateString();
+$lastMonthStart = now()->startOfMonth()->subMonth()->toDateString();
 
 /*
 |--------------------------------------------------------------------------
@@ -59,10 +58,10 @@ $onlineStudents = DB::table('student_login_logs')->where('status', 'online')->di
 |--------------------------------------------------------------------------
 */
 $studentMonthRaw = DB::table('tbl_student')
-->selectRaw("DATE_FORMAT(created_at, '%b') as month_label, DATE_FORMAT(created_at, '%Y-%m') as month_key, COUNT(*) as total")
+->selectRaw("SUBSTR(created_at, 1, 7) as month_key, COUNT(*) as total")
 ->whereNotNull('created_at')
-->where('created_at', '>=', now()->copy()->subMonths(5)->startOfMonth())
-->groupBy('month_label', 'month_key')
+->where('created_at', '>=', now()->startOfMonth()->subMonths(5))
+->groupBy('month_key')
 ->orderBy('month_key')
 ->get()
 ->keyBy('month_key');
@@ -71,7 +70,7 @@ $studentChartLabels = [];
 $studentChartData = [];
 
 for ($i = 5; $i >= 0; $i--) {
-$date = now()->copy()->subMonths($i);
+$date = now()->startOfMonth()->subMonths($i);
 $key = $date->format('Y-m');
 $studentChartLabels[] = $date->format('M');
 $studentChartData[] = (int) optional($studentMonthRaw->get($key))->total;
@@ -216,7 +215,8 @@ $thisMonthStudents = DB::table('tbl_student')
 ->count();
 
 $lastMonthStudents = DB::table('tbl_student')
-->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])
+->where('created_at', '>=', $lastMonthStart)
+->where('created_at', '<', $currentMonthStart)
 ->count();
 
 $studentGrowthPercent = $lastMonthStudents > 0
