@@ -10,7 +10,7 @@ class QrAttendanceController extends Controller
 {
   public function showForm()
   {
-    return view('attendance.qr-form');
+    return view('Admin.Attendance.qr-form');
   }
 
   public function submitForm(Request $request)
