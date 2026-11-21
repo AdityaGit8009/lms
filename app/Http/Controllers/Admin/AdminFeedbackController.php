@@ -95,13 +95,7 @@ class AdminFeedbackController extends Controller
   {
     $form = FeedbackForm::with('responses')->findOrFail($id);
 
-    $form->session_names = $this->resolveNames('tbl_session', 'session_id', 'session_name', $form->session_ids);
-    $form->center_names = $this->resolveNames('tbl_centers', 'center_id', 'center_name', $form->center_ids);
-    $form->programme_names = $this->resolveNames('tbl_programme', 'programme_id', 'programme_name', $form->programme_ids);
-    $form->technology_names = $this->resolveNames('tbl_technology', 'technology_id', 'technology_name', $form->technology_ids);
-    $form->batch_names = $this->resolveNames('tbl_batch', 'batch_id', 'batch_name', $form->batch_ids);
-
-    return view('Admin.feedback.response_page', compact('form'));
+    return view('Admin.Feedback.analytics', compact('form'));
   }
   public function copy($id)
   {

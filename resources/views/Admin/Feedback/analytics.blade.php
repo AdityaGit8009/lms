@@ -4,6 +4,10 @@
 @section('content')
 <main class="main-content">
   <div class="page-body p-3">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h1 class="h4 mb-0">{{ $form->title }}</h1>
+      <a class="btn btn-outline-primary" href="{{ route('admin.feedback.edit', $form->form_id) }}">Edit form</a>
+    </div>
     <div class="row g-3 mb-4">
       <div class="col-md-6">
         <div class="card border-0 shadow-sm h-100">
@@ -27,7 +31,7 @@
       <div class="card-body">
         <h4 class="mb-3">Student Responses</h4>
         <div class="row g-3">
-          @foreach($form->responses as $response)
+          @forelse($form->responses as $response)
           <div class="col-md-6">
             <div class="border rounded-4 p-3 h-100 bg-light-subtle">
               <div class="d-flex justify-content-between mb-2">
@@ -46,7 +50,9 @@
               @endforeach
             </div>
           </div>
-          @endforeach
+          @empty
+          <p class="text-muted">No responses yet.</p>
+          @endforelse
         </div>
       </div>
     </div>
