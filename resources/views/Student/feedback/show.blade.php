@@ -17,48 +17,48 @@
     @foreach(($form->questions_json ?? []) as $index => $question)
     <div class="card border-0 shadow-sm rounded-4 mb-3">
       <div class="card-body">
-        <label class="fw-bold d-block mb-3">
+        @php
+          $uid = $question['uid'];
+          $name = "answers[{$uid}][value]";
+          $oldValue = old("answers.{$uid}.value");
+          $required = (bool) ($question['required'] ?? false);
+        @endphp
+        <div class="fw-bold d-block mb-3" id="question-{{ $uid }}">
           {{ $index + 1 }}. {{ $question['text'] ?? '' }}
-        </label>
-
-        @php $name = "answers[{$question['uid']}]"; @endphp
-
-        <input type="hidden" name="{{ $name }}[question]" value="{{ $question['text'] ?? '' }}">
-        <input type="hidden" name="{{ $name }}[type]" value="{{ $question['type'] ?? '' }}">
+          @if($required)<span class="text-danger"> (required)</span>@endif
+        </div>
 
         @if(($question['type'] ?? '') === 'short_answer')
-        <input type="text" name="{{ $name }}[value]" class="form-control">
+        <input type="text" name="{{ $name }}" aria-labelledby="question-{{ $uid }}" class="form-control" value="{{ is_scalar($oldValue) ? $oldValue : '' }}" @required($required)>
         @elseif(($question['type'] ?? '') === 'paragraph')
-        <textarea name="{{ $name }}[value]" class="form-control" rows="4"></textarea>
+        <textarea name="{{ $name }}" aria-labelledby="question-{{ $uid }}" class="form-control" rows="4" @required($required)>{{ is_scalar($oldValue) ? $oldValue : '' }}</textarea>
         @elseif(($question['type'] ?? '') === 'dropdown')
-        <select name="{{ $name }}[value]" class="form-select">
+        <select name="{{ $name }}" aria-labelledby="question-{{ $uid }}" class="form-select" @required($required)>
           <option value="">Select option</option>
           @foreach(($question['options'] ?? []) as $option)
-          <option value="{{ $option }}">{{ $option }}</option>
+          <option value="{{ $option }}" @selected($oldValue === $option)>{{ $option }}</option>
           @endforeach
         </select>
         @elseif(($question['type'] ?? '') === 'radio')
         @foreach(($question['options'] ?? []) as $option)
         <div class="form-check mb-2">
-          <input class="form-check-input" type="radio" name="{{ $name }}[value]" value="{{ $option }}">
-          <label class="form-check-label">{{ $option }}</label>
+          <input class="form-check-input" type="radio" name="{{ $name }}" aria-labelledby="question-{{ $uid }}" value="{{ $option }}" id="{{ $uid }}-{{ $loop->index }}" @checked($oldValue === $option) @required($required)>
+          <label class="form-check-label" for="{{ $uid }}-{{ $loop->index }}">{{ $option }}</label>
         </div>
         @endforeach
         @elseif(($question['type'] ?? '') === 'checkbox')
         @foreach(($question['options'] ?? []) as $option)
         <div class="form-check mb-2">
-          <input class="form-check-input" type="checkbox" name="{{ $name }}[value][]" value="{{ $option }}">
-          <label class="form-check-label">{{ $option }}</label>
+          <input class="form-check-input" type="checkbox" name="{{ $name }}[]" value="{{ $option }}" id="{{ $uid }}-{{ $loop->index }}" @checked(in_array($option, (array) $oldValue, true))>
+          <label class="form-check-label" for="{{ $uid }}-{{ $loop->index }}">{{ $option }}</label>
         </div>
         @endforeach
         @elseif(($question['type'] ?? '') === 'rating')
-        <select name="{{ $name }}[value]" class="form-select">
+        <select name="{{ $name }}" aria-labelledby="question-{{ $uid }}" class="form-select" @required($required)>
           <option value="">Select rating</option>
-          <option value="1">1 Star</option>
-          <option value="2">2 Star</option>
-          <option value="3">3 Star</option>
-          <option value="4">4 Star</option>
-          <option value="5">5 Star</option>
+          @for($rating = 1; $rating <= 5; $rating++)
+          <option value="{{ $rating }}" @selected(is_scalar($oldValue) && (string) $oldValue === (string) $rating)>{{ $rating }} {{ $rating === 1 ? 'star' : 'stars' }}</option>
+          @endfor
         </select>
         @endif
       </div>

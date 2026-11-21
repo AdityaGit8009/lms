@@ -469,9 +469,8 @@
     }
 
     function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.innerText = text ?? '';
-        return div.innerHTML;
+        const entities = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+        return String(text ?? '').replace(/[&<>"']/g, char => entities[char]);
     }
 
     function initChoice(id) {
@@ -639,7 +638,7 @@
         const options = Array.isArray(q.options) && q.options.length ? q.options : ['Option 1'];
 
         return `
-        <div class="question-card" data-uid="${uid}">
+        <div class="question-card" data-uid="${escapeHtml(uid)}">
             <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                 <button type="button" class="question-handle" title="Drag to reorder">
                     <i class="bi bi-grip-vertical"></i>
@@ -680,7 +679,7 @@
                 </div>
             </div>
 
-            <input type="hidden" class="question-options-json" value='${JSON.stringify(options)}'>
+            <input type="hidden" class="question-options-json" value='${escapeHtml(JSON.stringify(options))}'>
         </div>
     `;
     }
