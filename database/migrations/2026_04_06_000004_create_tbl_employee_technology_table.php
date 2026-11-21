@@ -2,12 +2,17 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('tbl_employee_technology')) {
+            return;
+        }
+
         Schema::create('tbl_employee_technology', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('emp_id');
@@ -22,6 +27,11 @@ return new class extends Migration
 
     public function down(): void
     {
+        // Some existing databases recorded the later copy as the table's owner.
+        if (DB::table(config('database.migrations.table'))->where('migration', '2026_04_06_112754_create_tbl_employee_technology_table')->exists()) {
+            return;
+        }
+
         Schema::dropIfExists('tbl_employee_technology');
     }
 };
