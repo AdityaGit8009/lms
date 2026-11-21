@@ -9,6 +9,7 @@ use App\Models\Session;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 class AdminFeedbackController extends Controller
@@ -54,7 +55,7 @@ class AdminFeedbackController extends Controller
       'technology_ids'  => $this->normalizeMulti($validated['technology_ids'] ?? []),
       'batch_ids'       => $this->normalizeMulti($validated['batch_ids'] ?? []),
       'form_status'     => $validated['form_status'],
-      'questions_json'  => json_decode($validated['questions_json'], true),
+      'questions_json'  => $validated['questions_json'],
       'created_by'      => Auth::id(),
     ]);
 
@@ -104,6 +105,7 @@ class AdminFeedbackController extends Controller
     $newForm = $form->replicate();
     $newForm->public_key = (string) \Illuminate\Support\Str::uuid();
     $newForm->title = $form->title . ' (Copy)';
+    $newForm->created_by = Auth::id();
     $newForm->created_at = now();
     $newForm->updated_at = now();
     $newForm->save();
@@ -125,7 +127,7 @@ class AdminFeedbackController extends Controller
       'technology_ids'  => $this->normalizeMulti($validated['technology_ids'] ?? []),
       'batch_ids'       => $this->normalizeMulti($validated['batch_ids'] ?? []),
       'form_status'     => $validated['form_status'],
-      'questions_json'  => json_decode($validated['questions_json'], true),
+      'questions_json'  => $validated['questions_json'],
     ]);
 
     return redirect()->route('admin.feedback.manage')->with('success', 'Feedback form updated successfully.');
@@ -276,7 +278,7 @@ class AdminFeedbackController extends Controller
 
   private function validateForm(Request $request): array
   {
-    return $request->validate([
+    $validated = $request->validate([
       'title' => 'required|string|max:255',
       'description' => 'nullable|string',
       'session_ids' => 'nullable|array',
@@ -285,8 +287,24 @@ class AdminFeedbackController extends Controller
       'technology_ids' => 'nullable|array',
       'batch_ids' => 'nullable|array',
       'form_status' => 'required|in:open,close',
-      'questions_json' => 'required|string',
+      'questions_json' => 'required|json',
     ]);
+
+    $questions = json_decode($validated['questions_json'], true);
+    Validator::make(['questions' => $questions], [
+      'questions' => 'required|array|list|min:1',
+      'questions.*' => 'required|array',
+      'questions.*.uid' => 'required|string|alpha_dash:ascii|distinct',
+      'questions.*.text' => 'required|string',
+      'questions.*.type' => 'required|in:short_answer,paragraph,dropdown,radio,checkbox,rating',
+      'questions.*.required' => 'sometimes|boolean',
+      'questions.*.options' => 'required_if:questions.*.type,dropdown,radio,checkbox|array|min:1',
+      'questions.*.options.*' => 'required|string',
+    ])->validate();
+
+    $validated['questions_json'] = $questions;
+
+    return $validated;
   }
 
   private function normalizeMulti(array $items): array
