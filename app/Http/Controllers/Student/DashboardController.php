@@ -3,58 +3,11 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
-use App\Models\RegisterStudent;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-  private function getStudentOrRedirect(Request $request): RegisterStudent|RedirectResponse
-  {
-    if (session('logged_in_user_role') !== 'student') {
-      return redirect()->route('login');
-    }
-
-    $studentId = session('logged_in_user_id');
-
-    if (!$studentId) {
-      return redirect()->route('login');
-    }
-
-    $student = RegisterStudent::find($studentId);
-
-    if (!$student) {
-      $request->session()->forget([
-        'logged_in_user_id',
-        'logged_in_user_name',
-        'logged_in_user_email',
-        'logged_in_user_role',
-      ]);
-
-      $request->session()->invalidate();
-      $request->session()->regenerateToken();
-
-      return redirect()->route('login')->with('error', 'Student account not found.');
-    }
-
-    if (($student->approval_status ?? 'Pending') !== 'Approved') {
-      $request->session()->forget([
-        'logged_in_user_id',
-        'logged_in_user_name',
-        'logged_in_user_email',
-        'logged_in_user_role',
-      ]);
-
-      $request->session()->invalidate();
-      $request->session()->regenerateToken();
-
-      return redirect()->route('login')->with('error', 'Your account is no longer approved.');
-    }
-
-    return $student;
-  }
-
   private function sidebarData(): array
   {
     return [
@@ -63,12 +16,9 @@ class DashboardController extends Controller
     ];
   }
 
-  public function index(Request $request): View|RedirectResponse
+  public function index(Request $request): View
   {
-    $student = $this->getStudentOrRedirect($request);
-    if ($student instanceof RedirectResponse) {
-      return $student;
-    }
+    $student = $request->attributes->get('studentRegistration');
 
     $stats = [
       'enrolled' => 3,
@@ -161,12 +111,9 @@ class DashboardController extends Controller
     ], $this->sidebarData()));
   }
 
-  public function courses(Request $request): View|RedirectResponse
+  public function courses(Request $request): View
   {
-    $student = $this->getStudentOrRedirect($request);
-    if ($student instanceof RedirectResponse) {
-      return $student;
-    }
+    $student = $request->attributes->get('studentRegistration');
 
     $courses = [
       [
@@ -198,12 +145,9 @@ class DashboardController extends Controller
     ], $this->sidebarData()));
   }
 
-  public function assignments(Request $request): View|RedirectResponse
+  public function assignments(Request $request): View
   {
-    $student = $this->getStudentOrRedirect($request);
-    if ($student instanceof RedirectResponse) {
-      return $student;
-    }
+    $student = $request->attributes->get('studentRegistration');
 
     $assignments = [
       ['title' => 'Java OOP Assignment', 'course' => 'Java Full Stack Development', 'due_date' => '05 Apr 2026', 'status' => 'Pending'],
@@ -217,12 +161,9 @@ class DashboardController extends Controller
     ], $this->sidebarData()));
   }
 
-  public function quiz(Request $request): View|RedirectResponse
+  public function quiz(Request $request): View
   {
-    $student = $this->getStudentOrRedirect($request);
-    if ($student instanceof RedirectResponse) {
-      return $student;
-    }
+    $student = $request->attributes->get('studentRegistration');
 
     $quizzes = [
       ['title' => 'Java Basics Quiz', 'course' => 'Java Full Stack Development', 'marks' => '18/20', 'status' => 'Completed'],
@@ -236,12 +177,9 @@ class DashboardController extends Controller
     ], $this->sidebarData()));
   }
 
-  public function schedule(Request $request): View|RedirectResponse
+  public function schedule(Request $request): View
   {
-    $student = $this->getStudentOrRedirect($request);
-    if ($student instanceof RedirectResponse) {
-      return $student;
-    }
+    $student = $request->attributes->get('studentRegistration');
 
     $schedule = [
       ['day' => 'Monday', 'time' => '10:00 AM - 11:00 AM', 'subject' => 'Java Class'],
@@ -255,12 +193,9 @@ class DashboardController extends Controller
     ], $this->sidebarData()));
   }
 
-  public function results(Request $request): View|RedirectResponse
+  public function results(Request $request): View
   {
-    $student = $this->getStudentOrRedirect($request);
-    if ($student instanceof RedirectResponse) {
-      return $student;
-    }
+    $student = $request->attributes->get('studentRegistration');
 
     $results = [
       ['exam' => 'Java Mid Test', 'marks' => '78', 'out_of' => '100', 'grade' => 'B+'],
@@ -274,12 +209,9 @@ class DashboardController extends Controller
     ], $this->sidebarData()));
   }
 
-  public function certificates(Request $request): View|RedirectResponse
+  public function certificates(Request $request): View
   {
-    $student = $this->getStudentOrRedirect($request);
-    if ($student instanceof RedirectResponse) {
-      return $student;
-    }
+    $student = $request->attributes->get('studentRegistration');
 
     $certificates = [
       ['title' => 'Java Foundation Certificate', 'issued_on' => '15 Mar 2026', 'status' => 'Issued'],
@@ -292,12 +224,9 @@ class DashboardController extends Controller
     ], $this->sidebarData()));
   }
 
-  public function announcements(Request $request): View|RedirectResponse
+  public function announcements(Request $request): View
   {
-    $student = $this->getStudentOrRedirect($request);
-    if ($student instanceof RedirectResponse) {
-      return $student;
-    }
+    $student = $request->attributes->get('studentRegistration');
 
     $announcements = [
       ['title' => 'New Java module uploaded', 'date' => '01 Apr 2026'],
@@ -311,24 +240,18 @@ class DashboardController extends Controller
     ], $this->sidebarData()));
   }
 
-  public function profile(Request $request): View|RedirectResponse
+  public function profile(Request $request): View
   {
-    $student = $this->getStudentOrRedirect($request);
-    if ($student instanceof RedirectResponse) {
-      return $student;
-    }
+    $student = $request->attributes->get('studentRegistration');
 
     return view('Student.profile', array_merge([
       'student' => $student,
     ], $this->sidebarData()));
   }
 
-  public function changePassword(Request $request): View|RedirectResponse
+  public function changePassword(Request $request): View
   {
-    $student = $this->getStudentOrRedirect($request);
-    if ($student instanceof RedirectResponse) {
-      return $student;
-    }
+    $student = $request->attributes->get('studentRegistration');
 
     return view('Student.change_password', array_merge([
       'student' => $student,

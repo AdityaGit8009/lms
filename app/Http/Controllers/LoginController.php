@@ -99,17 +99,8 @@ class LoginController extends Controller
         ], 401);
       }
 
-      Auth::logout();
-      $request->session()->invalidate();
-      $request->session()->regenerateToken();
+      Auth::login($user, $request->boolean('remember'));
       $request->session()->regenerate();
-
-      session([
-        'logged_in_user_id' => $student->id,
-        'logged_in_user_name' => $student->name,
-        'logged_in_user_email' => $student->email,
-        'logged_in_user_role' => 'student',
-      ]);
 
       return response()->json([
         'status' => true,
@@ -141,13 +132,6 @@ class LoginController extends Controller
     if (Auth::check()) {
       Auth::logout();
     }
-
-    $request->session()->forget([
-      'logged_in_user_id',
-      'logged_in_user_name',
-      'logged_in_user_email',
-      'logged_in_user_role',
-    ]);
 
     $request->session()->invalidate();
     $request->session()->regenerateToken();

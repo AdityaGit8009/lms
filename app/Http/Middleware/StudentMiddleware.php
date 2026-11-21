@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\RegisterStudent;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,9 +16,21 @@ class StudentMiddleware
       return redirect()->route('login');
     }
 
-    if ((Auth::user()->role ?? null) !== 'student') {
+    $user = $request->user();
+    if (strtolower(trim((string) $user->role)) !== 'student') {
       abort(403, 'Unauthorized access.');
     }
+
+    $registration = RegisterStudent::where('email', $user->email)->first();
+    if ($user->is_block === 'Y' || $registration?->approval_status !== 'Approved') {
+      Auth::logout();
+      $request->session()->invalidate();
+      $request->session()->regenerateToken();
+
+      return redirect()->route('login')->with('error', 'An active, approved student account is required.');
+    }
+
+    $request->attributes->set('studentRegistration', $registration);
 
     return $next($request);
   }

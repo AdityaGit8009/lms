@@ -177,7 +177,7 @@ Route::middleware(['auth', 'admin:employee'])->prefix('employee')->group(functio
 | Student Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('student')->group(function () {
+Route::middleware(['auth', 'student'])->prefix('student')->group(function () {
   Route::get('/dashboard', [DashboardController::class, 'index'])->name('student.dashboard');
   Route::get('/courses', [DashboardController::class, 'courses'])->name('student.courses');
   Route::get('/assignments', [DashboardController::class, 'assignments'])->name('student.assignments');
