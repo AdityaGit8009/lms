@@ -197,6 +197,12 @@ $notifs = [
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
+  $.ajaxPrefilter(function (options, originalOptions, xhr) {
+    if (!options.crossDomain && !/^(GET|HEAD|OPTIONS)$/i.test(options.type)) {
+      xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').content);
+    }
+  });
+
   $(document).ready(function() {
     $('#logoutBtn1').on('click', function(e) {
       e.preventDefault();

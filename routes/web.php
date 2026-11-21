@@ -61,8 +61,13 @@ Route::post('/auth/logout', [LoginController::class, 'logout'])->name('api.logou
 | Main Auth Routes
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'admin:admin,employee'])->group(function () {
   Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+  Route::get('/admin/profile', [AdminProfileController::class, 'index'])->name('admin.profile');
+  Route::get('/admin/change-password', [AdminProfileController::class, 'changePasswordPage'])->name('admin.change.password');
+});
+
+Route::middleware(['auth', 'admin'])->group(function () {
   Route::get('/add_course', [AdminDashboardController::class, 'courses'])->name('admin.add_course');
   Route::get('/add_student', [AdminDashboardController::class, 'students'])->name('admin.add_student');
   Route::get('/courses', [CourseController::class, 'index'])->name('admin.courses');
@@ -131,8 +136,6 @@ Route::middleware('auth')->group(function () {
   Route::get('/settings', [AdminDashboardController::class, 'settings'])->name('admin.settings');
   Route::get('/approvals', [AdminDashboardController::class, 'approvals'])->name('admin.approvals');
 
-  Route::get('/admin/profile', [AdminProfileController::class, 'index'])->name('admin.profile');
-  Route::get('/admin/change-password', [AdminProfileController::class, 'changePasswordPage'])->name('admin.change.password');
 });
 
 
@@ -163,7 +166,7 @@ Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->gro
 | Employee Routes
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth')->prefix('employee')->group(function () {
+Route::middleware(['auth', 'admin:employee'])->prefix('employee')->group(function () {
   Route::get('/dashboard', function () {
     return redirect()->route('admin.dashboard');
   })->name('employee.dashboard');
@@ -189,7 +192,7 @@ Route::prefix('student')->group(function () {
 
 
 
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
   Route::get('/student-login-status', [StudentLoginStatusController::class, 'index'])
     ->name('student.login.status');
 

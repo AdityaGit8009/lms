@@ -27,9 +27,9 @@ use App\Http\Controllers\Admin\UploadContentController;
 use App\Http\Controllers\Admin\ViewStudentController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('auth')->middleware('web')->group(function () {
+Route::prefix('auth')->middleware(['web', 'auth', 'admin:admin,employee'])->group(function () {
   Route::post('/approvals/{id}/update-status', [AdminDashboardController::class, 'updateApprovalStatus'])
-    ->name('admin.approvals.updateStatus');
+    ->middleware('admin')->name('admin.approvals.updateStatus');
 
   Route::post('/admin/profile/update', [AdminProfileController::class, 'update'])
     ->name('api.admin.profile.update');
@@ -38,7 +38,7 @@ Route::prefix('auth')->middleware('web')->group(function () {
     ->name('api.admin.change.password');
 });
 
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->middleware(['web', 'auth', 'admin'])->group(function () {
   Route::post('/roles', [RoleController::class, 'store'])->name('api.admin.roles.store');
   Route::put('/roles/{id}', [RoleController::class, 'update'])->name('api.admin.roles.update');
   Route::delete('/roles/{id}', [RoleController::class, 'destroy'])->name('api.admin.roles.destroy');
@@ -181,7 +181,7 @@ Route::prefix('admin')->group(function () {
     ->name('admin.popup-notifications.destroy');
 });
 
-Route::prefix('attendance')->name('attendance.')->group(function () {
+Route::prefix('attendance')->middleware(['web', 'auth', 'admin'])->name('attendance.')->group(function () {
   Route::post('/centers', [AttendanceController::class, 'getCenters'])->name('centers');
   Route::post('/programmes', [AttendanceController::class, 'getProgrammes'])->name('programmes');
   Route::post('/technologies', [AttendanceController::class, 'getTechnologies'])->name('technologies');
