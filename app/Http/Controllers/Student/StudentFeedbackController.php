@@ -23,7 +23,7 @@ class StudentFeedbackController extends Controller
 
     $forms = FeedbackForm::where('form_status', 'open')->latest('form_id')->get();
 
-    return view('student.feedback.index', compact('forms', 'student'));
+    return view('Student.feedback.index', compact('forms', 'student'));
   }
 
   public function show($formId)
@@ -32,7 +32,7 @@ class StudentFeedbackController extends Controller
     $student = Student::where('stu_email', $user->email)->firstOrFail();
     $form = FeedbackForm::findOrFail($formId);
 
-    return view('student.feedback.show', compact('form', 'student'));
+    return view('Student.feedback.show', compact('form', 'student'));
   }
 
   public function store(Request $request, $formId)
@@ -58,6 +58,6 @@ class StudentFeedbackController extends Controller
       'answers_json' => $answers,
     ]);
 
-    return redirect()->route('student.feedback.index')->with('success', 'Feedback submitted successfully.');
+    return redirect()->route('Student.feedback.index')->with('success', 'Feedback submitted successfully.');
   }
 }
